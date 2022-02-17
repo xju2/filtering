@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from pickletools import read_string1
 import torch
 import numpy as np
 from numpy.random import Generator, PCG64
@@ -43,3 +44,41 @@ def read(filename):
         inputs, labels = transform(filename)
 
     return inputs, labels
+
+def read_and_save(in_fname, out_fname):
+    inputs, labels = read(in_fname)
+    np.savez(out_fname, inputs, labels)
+
+if __name__ == '__main__':
+    import argparse
+    import os
+
+    parser = argparse.ArgumentParser(description='Convert files to a matrix')
+    add_arg = parser.add_argument
+    add_arg('indir', help='input directory')
+    add_arg('outdir', help='output directory')
+    add_arg("-w", "--workers", help='number of workers', type=int, default=1)
+    args = parser.parse_args()
+    
+    indir,outdir, workers = args.indir, args.outdir, args.workers
+    input_list = []
+    for root,dirs,files in os.walk(args.indir):
+        for fname in files:
+            if "pdf" in fname: continue
+            else:
+                infname = os.path.join(root, fname)
+                outfname = os.path.join(root.replace(indir, outdir), fname)
+                input_list.append( (infname, outfname) )
+        for fdir in dirs:
+            outdir = os.path.join(root.replace(indir, outdir), fdir)
+            os.makedirs(outdir, exist_ok=True)
+
+    print("total input files", len(input_list), f"using {args.workers} workers")
+
+    if workers > 1:
+        from multiprocessing import Pool
+        with Pool(workers) as p:
+            p.starmap(read_and_save, input_list)
+    else:
+        for infname,outfname in input_list:
+            read_and_save(infname, outfname)
