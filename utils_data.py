@@ -63,15 +63,15 @@ if __name__ == '__main__':
     indir,outdir, workers = args.indir, args.outdir, args.workers
     input_list = []
     for root,dirs,files in os.walk(args.indir):
+
         for fname in files:
             if "pdf" in fname: continue
             else:
                 infname = os.path.join(root, fname)
                 outfname = os.path.join(root.replace(indir, outdir), fname)
+                os.makedirs(os.path.dirname(outfname), exist_ok=True)
                 input_list.append( (infname, outfname) )
-        for fdir in dirs:
-            outdir = os.path.join(root.replace(indir, outdir), fdir)
-            os.makedirs(outdir, exist_ok=True)
+
 
     print("total input files", len(input_list), f"using {args.workers} workers")
 
