@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-from pickletools import read_string1
 import torch
 import numpy as np
 from numpy.random import Generator, PCG64
@@ -45,7 +44,10 @@ def read(filename):
 
     return inputs, labels
 
-def read_and_save(in_fname, out_fname):
+def read_and_save(in_fname, out_fname):    
+    if os.path.exists(out_fname+".npz"):
+        return 
+
     inputs, labels = read(in_fname)
     np.savez(out_fname, inputs, labels)
 
@@ -71,7 +73,6 @@ if __name__ == '__main__':
                 outfname = os.path.join(root.replace(indir, outdir), fname)
                 os.makedirs(os.path.dirname(outfname), exist_ok=True)
                 input_list.append( (infname, outfname) )
-
 
     print("total input files", len(input_list), f"using {args.workers} workers")
 
